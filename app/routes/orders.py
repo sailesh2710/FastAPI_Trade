@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
-from app.database.db import cursor, conn
+from app.database.db import get_db_connection
 from app.models.order import OrderCreate, OrderResponse
 from typing import List
 import json
@@ -7,7 +7,7 @@ import json
 router = APIRouter()
 
 # Store active WebSocket connections
-active_connections = []
+active_connections = set()
 
 @router.websocket("/ws/orders")
 async def websocket_endpoint(websocket: WebSocket):
@@ -18,7 +18,7 @@ async def websocket_endpoint(websocket: WebSocket):
     - Whenever a new order is placed, all connected clients receive real-time updates.
     """
     await websocket.accept()
-    active_connections.append(websocket)
+    active_connections.add(websocket)
     try:
         while True:
             await websocket.receive_text()  # Keep connection alive
@@ -28,11 +28,16 @@ async def websocket_endpoint(websocket: WebSocket):
 # Function to broadcast order updates
 async def broadcast_order_update(order_data):
     """Broadcasts a new order to all WebSocket clients."""
+    disconnected_clients = []
     for connection in active_connections:
         try:
             await connection.send_text(json.dumps(order_data))
         except:
-            active_connections.remove(connection)
+            disconnected_clients.append(connection)
+
+    # Remove disconnected clients
+    for client in disconnected_clients:
+        active_connections.remove(client)
 
 # Create order (POST /orders) with WebSocket Notification
 @router.post(
@@ -52,6 +57,8 @@ async def broadcast_order_update(order_data):
 )
 async def create_order(order: OrderCreate):
     """Handles new order creation and broadcasts updates via WebSocket."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
     try:
         cursor.execute(
             "INSERT INTO orders (symbol, price, quantity, order_type) VALUES (%s, %s, %s, %s) RETURNING id",
@@ -59,15 +66,19 @@ async def create_order(order: OrderCreate):
         )
         order_id = cursor.fetchone()[0]
         conn.commit()
-        
+        cursor.close()
+        conn.close()
+
         order_data = OrderResponse(id=order_id, **order.dict())
 
-        # ✅ Broadcast new order to WebSocket clients
+        # Broadcast new order to WebSocket clients
         await broadcast_order_update(order_data.dict())
 
         return order_data
     except Exception as e:
         conn.rollback()
+        cursor.close()
+        conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
 # Get all orders (GET /orders)
@@ -83,6 +94,15 @@ async def create_order(order: OrderCreate):
 )
 def get_orders():
     """Fetches all orders from the database."""
-    cursor.execute("SELECT id, symbol, price, quantity, order_type FROM orders")
-    orders = cursor.fetchall()
-    return [OrderResponse(id=row[0], symbol=row[1], price=row[2], quantity=row[3], order_type=row[4]) for row in orders]
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id, symbol, price, quantity, order_type FROM orders")
+        orders = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return [OrderResponse(id=row[0], symbol=row[1], price=row[2], quantity=row[3], order_type=row[4]) for row in orders]
+    except Exception as e:
+        cursor.close()
+        conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
