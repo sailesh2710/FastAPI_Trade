@@ -6,7 +6,7 @@ import json
 
 router = APIRouter()
 
-# ✅ Store active WebSocket connections
+# Store active WebSocket connections
 active_connections = []
 
 @router.websocket("/ws/orders")
@@ -25,7 +25,7 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         active_connections.remove(websocket)
 
-# ✅ Function to broadcast order updates
+# Function to broadcast order updates
 async def broadcast_order_update(order_data):
     """Broadcasts a new order to all WebSocket clients."""
     for connection in active_connections:
@@ -34,7 +34,7 @@ async def broadcast_order_update(order_data):
         except:
             active_connections.remove(connection)
 
-# ✅ Create order (POST /orders) with WebSocket Notification
+# Create order (POST /orders) with WebSocket Notification
 @router.post(
     "/orders",
     response_model=OrderResponse,
@@ -70,7 +70,7 @@ async def create_order(order: OrderCreate):
         conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-# ✅ Get all orders (GET /orders)
+# Get all orders (GET /orders)
 @router.get(
     "/orders",
     response_model=List[OrderResponse],

@@ -9,7 +9,7 @@ app = FastAPI(
 
 app.include_router(router)
 
-# ✅ Health check route
+# Health check route
 @app.get("/")
 def home():
     return {"message": "Trade Order System is running"}

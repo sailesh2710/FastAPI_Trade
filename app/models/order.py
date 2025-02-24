@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 Base = declarative_base()
 
-# ✅ SQLAlchemy Model for Database
+# SQLAlchemy Model for Database
 class Order(Base):
     __tablename__ = "orders"
 
@@ -14,13 +14,13 @@ class Order(Base):
     quantity = Column(Integer, nullable=False)
     order_type = Column(String(10), nullable=False)
 
-# ✅ Pydantic Model for Request Validation
+# Pydantic Model for Request Validation
 class OrderCreate(BaseModel):
     symbol: str
     price: float
     quantity: int
     order_type: str
 
-# ✅ Pydantic Model for API Response
+# Pydantic Model for API Response
 class OrderResponse(OrderCreate):
     id: int
