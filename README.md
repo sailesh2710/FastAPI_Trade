@@ -173,7 +173,9 @@ Go to GitHub Repository → Settings → Secrets and Variables → Actions and a
 Initialise docker image actions in github repositiry and use the code from .github/workflows/deploy.yml.
 
 ---
-
+## Video Walkthrough
+https://drive.google.com/drive/u/0/folders/1HbzaRvkggBHP7DHfuWR_luRldp6hZj64
+---
 ## Future Improvements
 
 - Implement authentication and authorization for API security.
