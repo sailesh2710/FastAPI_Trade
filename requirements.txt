@@ -19,3 +19,4 @@ typing_extensions==4.12.2
 uvicorn==0.34.0
 websockets==15.0
 pytest
+httpx
