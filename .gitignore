@@ -1,0 +1,40 @@
+# Ignore Python virtual environments
+venv/
+.env
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore logs
+logs/
+*.log
+
+# Ignore IDE/editor settings
+.vscode/
+.idea/
+
+# Ignore Docker-related files (DO NOT commit the built image)
+*.dockerignore
+.dockerignore
+*.tar
+*.img
+*.container
+*.pid
+
+# Ignore database files (if using SQLite locally)
+*.db
+*.sqlite3
+
+# Ignore compiled dependencies
+dist/
+build/
+*.egg-info/
+
+# Ignore migrations (Optional)
+migrations/
+
+# Ignore GitHub Actions cache
+.github/
