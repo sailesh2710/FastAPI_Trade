@@ -38,3 +38,4 @@ migrations/
 
 # Ignore GitHub Actions cache
 .github/
+!.github/workflows/
